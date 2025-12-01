@@ -4,7 +4,10 @@
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("Hello, World!");
+            var ui = new UI();
+            var manager = new Manager(ui);
+            manager.Run();
+            Console.WriteLine("Goodbye, World!");
         }
     }
 }
