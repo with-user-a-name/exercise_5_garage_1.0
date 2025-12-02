@@ -3,7 +3,6 @@
     internal enum FuelType
     {
         Gasoline,
-        Diesel,
-        JetA
+        Diesel
     }
 }

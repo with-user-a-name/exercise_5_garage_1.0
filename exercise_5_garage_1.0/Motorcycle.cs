@@ -3,15 +3,13 @@ namespace exercise_5_garage_1._0
 {
     internal class Motorcycle : Vehicle
     {
-        public int CylinderVolume { get; private set; }
+        public int CylinderVolume { get; set; }
 
-        public Motorcycle() { }
+        public Motorcycle() : this(regNr: "", color: ConsoleColor.Black, nrOfWheels: 0, cylinderVolume: 0) { }
 
         public Motorcycle(string regNr, ConsoleColor color, int nrOfWheels, int cylinderVolume) : base(regNr, color, nrOfWheels)
         {
-            //VehicleType = VehicleEnumType.Motorcycle;
-            _vehicleType = StringToVehicleType("Motorcycle");
-            //VehicleType = "Motorcycle";
+            _vehicleType = VehicleEnumType.Motorcycle;
             CylinderVolume = cylinderVolume;
         }
 

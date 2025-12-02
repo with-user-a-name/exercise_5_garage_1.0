@@ -3,15 +3,13 @@ namespace exercise_5_garage_1._0
 {
     internal class Boat : Vehicle
     {
-        public int Length { get; private set; }
+        public int Length { get; set; }
 
-        public Boat() { }
-
+        public Boat() : this(regNr:"", color:ConsoleColor.Black, nrOfWheels:0, length:0) { }
+        
         public Boat(string regNr, ConsoleColor color, int nrOfWheels, int length) : base(regNr, color, nrOfWheels)
         {
-            //VehicleType = VehicleEnumType.Boat;
-            _vehicleType = StringToVehicleType("Boat");
-            //VehicleType = "Boat";
+            _vehicleType = VehicleEnumType.Boat;
             Length = length;
         }
     }

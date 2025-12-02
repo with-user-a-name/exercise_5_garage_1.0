@@ -11,10 +11,10 @@ namespace exercise_5_garage_1._0
     internal class Manager
     {
 
-        private UI _ui;
-        private Handler _handler = new Handler();
+        private IUI _ui;
+        private IHandler _handler = new Handler();
 
-        public Manager(UI ui)
+        public Manager(IUI ui)
         {
             _ui = ui;
         }
@@ -80,7 +80,7 @@ namespace exercise_5_garage_1._0
                     prompt = "Your selection: ";
                 }
                 else
-                    prompt = $"Invalid selection. Please try again: ";
+                    prompt = $"** Invalid selection. Please try again: ";
             }
         }
 
@@ -151,7 +151,7 @@ namespace exercise_5_garage_1._0
                 if (_ui.EscapeOrReadLine(out line))
                     return;
 
-                prompt = $"Invalid number of vehicles to add: \"{line}\"\n"
+                prompt = $"** Invalid number of vehicles to add: \"{line}\"\n"
                     + $"Enter the number of additional 1 to {maxAdditionalVehicles} vehicles to park in the garage (<ESC> for main menu): ";
             } while (!Int32.TryParse(line, out vehiclesToAdd) || ((vehiclesToAdd < 1) || (maxAdditionalVehicles < vehiclesToAdd)));
 
@@ -168,7 +168,31 @@ namespace exercise_5_garage_1._0
             _ui.WriteHeadLine(headLine);
 
             if (!_handler.GarageExists) { NoGarageMessage(); return; }
+
+            int fieldWidth = (Enum.GetNames(typeof(VehicleEnumType))
+                   .OrderByDescending(s => s.Length)
+                   .FirstOrDefault() ?? "").Length;
+
+            _ui.Write($"\n");
+            foreach (var vehicTp in Enum.GetNames(typeof(VehicleEnumType)))
+            {
+                IEnumerable<Vehicle>? queryResult = null;
+                try
+                {
+                    if (_handler.Search("VehicleType", vehicTp, ref queryResult))
+                        _ui.Write($"{(vehicTp + ":").PadRight(fieldWidth + 1)} {queryResult?.Count()}\n");
+                    else
+                        _ui.Write($"{(vehicTp + ":").PadRight(fieldWidth + 1)} 0\n");
+                }
+                catch (Exception ex)
+                {
+                    _ui.Write($"** Failed to list data for \"{vehicTp}\".\n");
+                    _ui.Write($"** {ex.Message}\n");
+                }
+            }
+            _ui.PressAnyKeyToContinue();
         }
+
 
         private void SearchGarage()
         {
@@ -382,22 +406,17 @@ namespace exercise_5_garage_1._0
                 return;
             }
 
-
-
             _ui.Write("Available vehicle types are listed below:\n");
             foreach (int vehicTp in Enum.GetValues(typeof(VehicleEnumType)))
-            {
                 _ui.Write($"{(vehicTp + 1)} - {(VehicleEnumType)vehicTp}\n");
-            }
             _ui.Write("\n");
 
             VehicleEnumType vehicleType;
             while (true)
             {
-                _ui.WriteMenuOptions("Pick the vehicle type from the above list (<ESC> for main menu): ");
+                _ui.WriteMenuOptions("Select the vehicle type from the above list (<ESC> for main menu): ");
                 if (_ui.EscapeOrReadLine(out line))
                     return;
-                
                 try
                 {
                     vehicleType =  Vehicle.StringToVehicleType(line);
@@ -407,33 +426,101 @@ namespace exercise_5_garage_1._0
                     _ui.Write($"{ex.Message}\n");
                     continue;
                 }
-
-                _ui.Write($"Using vehicle type: \"{vehicleType}\"\n");
+                _ui.Write($"Selected vehicle type: \"{vehicleType}\"\n");
                 break;
-
             }
 
             Type theVehicleType = Type.GetType("exercise_5_garage_1._0." + vehicleType.ToString())!;
             if (theVehicleType == null)
             {
-                _ui.Write($"(theVehicleType == null) ????\n");
+                _ui.Write($"** (theVehicleType == null) returning to main menu\n");
                 _ui.PressAnyKeyToContinue();
                 return;
             }
             var vehicleObject = Activator.CreateInstance(theVehicleType);
             if (vehicleObject == null)
             {
-                _ui.Write($"(vehicleObject == null) ????\n");
+                _ui.Write($"** (vehicleObject == null) returning to main menu\n");
                 _ui.PressAnyKeyToContinue();
                 return;
             }
-            _ui.Write($"Created instance of type: {vehicleObject.GetType().FullName}\n");
 
-
-
-            _ui.Write($"Listing properties:\n");
-            //PropertyInfo[] props = vehicleObject.GetType().GetProperties();
             IEnumerable<PropertyInfo> props = vehicleObject.GetType().GetProperties().Where(p => p.CanWrite);
+            foreach (PropertyInfo prop in props)
+            {
+                while (true)
+                {
+                    _ui.WriteMenuOptions($"Enter {prop.Name} for the {vehicleObject.GetType().Name} (<ESC> for main menu): ");
+                    if (_ui.EscapeOrReadLine(out line))
+                        return;
+
+                    string errPrompt = $"** Invalid property value: \"{line}\"\n";
+                    dynamic? convertedValue = null;
+                    try
+                    {
+                        convertedValue = Convert.ChangeType(line, prop.PropertyType);
+                        prop.SetValue(vehicleObject, convertedValue);
+                    }
+                    catch (TargetInvocationException tie)
+                    {
+                        // Unwrap the inner exception and handle it...
+                        _ui.Write(errPrompt);
+                        _ui.Write($"** An error (can never be caught!?) occurred: {tie.Message}\n");
+                        continue;
+                    }
+                    catch (Exception ex)
+                    {
+                        //TODO 2512010739: Why is it impossible to catch exceptions from the property setters here ????!!!!!
+                        // As it seems to be such a pain in the xxx to catch exceptions thrown from the depths of
+                        // the prop.SetValue() call it might be neccessary to find an acceptable workaround that could
+                        // suffice until a better solution is found...
+                        //
+                        // An ugly way, just to get the job done, would be to let the property setters assign
+                        // values representing an unset state like an empty string, null or perhaps max negative for
+                        // ingegers etc. and then readback the value set by prop.SetValue() and see if its the same as the
+                        // value set.
+                        //
+                        // At least exceptions from Convert.ChangeType() are caught here.
+                        _ui.Write(errPrompt);
+                        _ui.Write($"** {ex.Message}\n");
+                        continue;
+                    }
+                    dynamic? propValue = prop.GetValue(vehicleObject);
+                    if (propValue == null)
+                        return;
+
+                    if (line.Equals(string.Empty))
+                        _ui.Write(errPrompt);
+                    else if (((prop.PropertyType == typeof(string)) && (propValue.ToUpper() == convertedValue.ToUpper()))
+                        ||   (propValue == convertedValue))
+                    {
+                        _ui.Write($"{prop.Name} property is set to: \"{prop.GetValue(vehicleObject)}\"\n");
+                        break;
+                    }
+                    else
+                        _ui.Write(errPrompt);
+                }
+            }
+
+            IEnumerable<Vehicle>? queryResult = null;
+            try
+            {
+                _handler.Search("RegistrationNr", ((Vehicle)vehicleObject).RegistrationNr, ref queryResult);
+            }
+            catch (Exception ex)
+            {
+                _ui.Write($"** {ex.Message}\n");
+            }
+            if (queryResult!.Count() > 0)
+            {
+                _ui.Write($"There already is a vehicle parked with registration number \"{((Vehicle)vehicleObject).RegistrationNr}\".\n");
+                ListVehicles(queryResult!);
+                _ui.PressAnyKeyToContinue();
+                return;
+            }
+
+            _ui.Write($"\nThe following vehicle information is used when checking in the {vehicleObject.GetType().Name} to the garage:\n");
+            props = vehicleObject.GetType().GetProperties();
             int fieldWidth = 0;
             foreach (PropertyInfo prop in props)
                 if (prop.Name.Length > fieldWidth)
@@ -441,113 +528,34 @@ namespace exercise_5_garage_1._0
             foreach (PropertyInfo prop in props)
             {
                 _ui.Write($"   {(prop.Name + ":").PadRight(fieldWidth + 1)} {prop.GetValue(vehicleObject)}\n");
-
-                while (true)
-                {
-                    _ui.WriteMenuOptions($"Enter {prop.Name} for the {vehicleObject.GetType().Name} (<ESC> for main menu): ");
-                    if (_ui.EscapeOrReadLine(out line))
-                        return;
-
-                    try
-                    {
-                        var convertedValue = Convert.ChangeType(line, prop.PropertyType);
-                        prop.SetValue(vehicleObject, convertedValue);
-                    }
-                    //catch (TargetInvocationException tie)
-                    //{
-                    //    // Unwrap the inner exception and handle it
-                    //    Console.WriteLine("An error occurred: " + tie.InnerException.Message);
-                    //}
-                    catch (Exception ex)
-                    {
-                        //TODO 2512010739: Why is it impossible to catch exceptions from the property setters here ????!!!!!
-                        _ui.Write($"From here #####:> {ex.Message}\n");
-                        continue;
-                    }
-
-                    _ui.Write($"The property {prop.Name} is set to: \"{prop.GetValue(vehicleObject)}\"\n");
-                    break;
-
-                }
-
-
             }
-
-
-
+            _handler.CheckInVehicle((Vehicle)vehicleObject);
 
             _ui.PressAnyKeyToContinue();
             return;
 
+            //_ui.ListConsoleColors("Select color for the vehicle, available colors are listed below:\n");
+            //_ui.Write("\n");
+            //while (true)
+            //{
+            //    _ui.WriteMenuOptions("Pick the closest matching color from the above list (<ESC> for main menu): ");
+            //    if (_ui.EscapeOrReadLine(out line))
+            //        return;
 
-            Vehicle vehicle = new Airplane();
-            while (true)
-            {
-                _ui.WriteMenuOptions("Enter the registration number for the vehicle (<ESC> for main menu): ");
-                if (_ui.EscapeOrReadLine(out line))
-                    return;
-                try
-                {
-                    vehicle.RegistrationNr = line;
-                }
-                catch (ArgumentException ex)
-                {
-                    _ui.Write($"{ex.Message}\n");
-                    continue;
-                }
-                _ui.Write($"Using registration number: \"{vehicle.RegistrationNr}\"\n");
-                break;
+            //    try
+            //    {
+            //        vehicle.Color = line;
+            //    }
+            //    catch (ArgumentException ex)
+            //    {
+            //        _ui.Write($"{ex.Message}\n");
+            //        continue;
+            //    }
+
+            //    _ui.Write($"Using vehicle color: \"{vehicle.Color}\"\n");
+            //    break;
+            //}
             }
-
-            _ui.ListConsoleColors("Select color for the vehicle, available colors are listed below:\n");
-            _ui.Write("\n");
-            while (true)
-            {
-                _ui.WriteMenuOptions("Pick the closest matching color from the above list (<ESC> for main menu): ");
-                if (_ui.EscapeOrReadLine(out line))
-                    return;
-
-                try
-                {
-                    vehicle.Color = line;
-                }
-                catch (ArgumentException ex)
-                {
-                    _ui.Write($"{ex.Message}\n");
-                    continue;
-                }
-
-                _ui.Write($"Using vehicle color: \"{vehicle.Color}\"\n");
-                break;
-            }
-
-
-            while (true)
-            {
-                _ui.WriteMenuOptions("Enter the number of wheels on the vehicle (<ESC> for main menu): ");
-                if (_ui.EscapeOrReadLine(out line))
-                    return;
-                try
-                {
-                    vehicle.SetNrOfWheels(line);
-                }
-                catch (ArgumentException ex)
-                {
-                    _ui.Write($"{ex.Message}\n");
-                    continue;
-                }
-                _ui.Write($"The number of wheels have been set to: \"{vehicle.NumberOfWheels}\"\n");
-                break;
-            }
-
-            _ui.Write("\nThe following vehicle information will be used when checking in the vehicle to the garage:\n"
-                + $"   Registration Number: {vehicle.RegistrationNr}\n"
-                + $"   Color:               {vehicle.Color}\n"
-                + $"   Number of wheels:    {vehicle.NumberOfWheels}\n");
-
-            _handler.CheckInVehicle(vehicle);
-            _ui.PressAnyKeyToContinue();
-        }
 
         private void CreateGarage()
         {
@@ -570,7 +578,7 @@ namespace exercise_5_garage_1._0
 
                 if (!Int32.TryParse(line, out vehicleCapacity) || (vehicleCapacity == 0))
                 {
-                    _ui.Write($"Invalid vehicle capacity: \"{line}\"\n");
+                    _ui.Write($"** Invalid vehicle capacity: \"{line}\"\n");
                 }
                 else
                     break;

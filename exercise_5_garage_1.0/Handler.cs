@@ -11,15 +11,16 @@ using System.Text.RegularExpressions;
 
 namespace exercise_5_garage_1._0
 {
-    internal class Handler
+    internal class Handler : IHandler
     {
-        Garage<Vehicle>? _garage = null;
+        IGarage<Vehicle>? _garage = null;
 
         private static Random random = new Random();
 
-        public bool GarageExists  => _garage != null;
+        public bool GarageExists => _garage != null;
 
-        public int GarageCapacity {
+        public int GarageCapacity
+        {
             get
             {
                 if (_garage != null)
@@ -30,47 +31,7 @@ namespace exercise_5_garage_1._0
             }
         }
 
-        //public Handler()//int vehicleCapacity, int addThisManyVehicles = 0)
-        //{
-        //    return;
-
-        //    //_garage = new Garage<Vehicle>(vehicleCapacity);
-
-        //    //Console.WriteLine($"Parking {addThisManyVehicles} vehicles in the garage");
-        //    Vehicle? vehicle = null;
-        //    //for (int i = 0; i < addThisManyVehicles; i++)
-        //    //{
-        //    //    string regNr = RandomUniqueRegistrationNr();
-        //    //    ConsoleColor color = (ConsoleColor)random.Next(0,15);
-        //    //    int nrOfWheels = random.Next(0, 18);
-        //    //    Console.WriteLine($"   Registration number: {regNr}");
-        //    //    Console.WriteLine($"   Color:            {color}");
-        //    //    Console.WriteLine($"   Number of wheels: {nrOfWheels}");
-
-        //    //    vehicle = new Vehicle(regNr, color, nrOfWheels);
-        //    //    CheckInVehicle(vehicle);
-        //    //}
-
-        //    vehicle = new Vehicle("aaa111", ConsoleColor.Magenta, 4);
-        //    CheckInVehicle(vehicle);
-
-        //    vehicle = new Boat("bbb222", ConsoleColor.Magenta, 4, 20);
-        //    CheckInVehicle(vehicle);
-
-        //    vehicle = new Vehicle("ccc333", ConsoleColor.Red, 4);
-        //    CheckInVehicle(vehicle);
-
-        //    //vehicle = new Vehicle("ddd444", ConsoleColor.Green, 4);
-        //    //CheckInVehicle(vehicle);
-
-        //    vehicle = new Vehicle("eee555", ConsoleColor.Green, 6);
-        //    CheckInVehicle(vehicle);
-
-        //    vehicle = new Vehicle("fff666", ConsoleColor.Cyan, 2);
-        //    CheckInVehicle(vehicle);
-        //}
-
-        public static string RandomUniqueRegistrationNr()
+        private static string RandomRegistrationNr()
         {
             const int length = 6;
             const string alphas = "ABCDEFGHIJKLMNOPQRSTUVWXYZÅÄÖ";
@@ -82,7 +43,7 @@ namespace exercise_5_garage_1._0
             return alphaStr + numStr;
         }
 
-        internal bool CheckInVehicle(Vehicle vehicle)
+        public bool CheckInVehicle(Vehicle vehicle)
         {
             if (_garage == null)
                 throw new InvalidOperationException("There is no garage (_garage == null)!");
@@ -98,7 +59,7 @@ namespace exercise_5_garage_1._0
             return false;
         }
 
-        internal IEnumerable<Vehicle> GetParkedVehicles()
+        public IEnumerable<Vehicle> GetParkedVehicles()
         {
             if (_garage == null)
                 throw new InvalidOperationException("There is no garage (_garage == null)!");
@@ -115,8 +76,8 @@ namespace exercise_5_garage_1._0
         /// <returns></returns>
         /// <exception cref="ArgumentNullException"></exception>
         /// <exception cref="ArgumentException"></exception>
-        internal bool Search(string propertyName, object value, ref IEnumerable<Vehicle>? source)
-        {            
+        public bool Search(string propertyName, object value, ref IEnumerable<Vehicle>? source)
+        {
             if (propertyName == null)
                 throw new ArgumentNullException("Parameter propertyName cannot be null.");
             if (value == null)
@@ -172,59 +133,7 @@ namespace exercise_5_garage_1._0
             return source.Any();
         }
 
-        //internal void TestSearch()
-        //{
-        //    if (!GarageExists)
-        //        return;
-
-        //    //IEnumerable<Vehicle> query =
-        //    var query =
-        //        from vehicle in _garage
-        //        where vehicle != null
-        //        where vehicle.Color == ConsoleColor.Green.ToString()
-        //        select vehicle;
-
-        //    var method = _garage!
-        //        .Where(p => p.Color == ConsoleColor.Magenta.ToString());
-        //    //.Select(p => p)
-
-        //    var refinedMethod = method
-        //        .Where(p => p.RegistrationNr == "BBB222");
-
-        //    Console.WriteLine($"##########   Listing query search:");
-        //    foreach (Vehicle vehicle in query)
-        //    {
-        //        ListVehicle(vehicle);
-        //    }
-        //    Console.WriteLine($"##########   Listing method search:");
-        //    foreach (Vehicle vehicle in method)
-        //    {
-        //        ListVehicle(vehicle);
-        //    }
-        //    //Refine the search
-        //    method = method
-        //        .Where(p => p.RegistrationNr == "BBB222");
-        //    Console.WriteLine($"##########   Listing the refined method search:");
-        //    foreach (Vehicle vehicle in method)
-        //    {
-        //        ListVehicle(vehicle);
-        //    }
-        //    Console.WriteLine($"##########   Listing refinedMethod search:");
-        //    foreach (Vehicle vehicle in refinedMethod)
-        //    {
-        //        ListVehicle(vehicle);
-        //    }
-        //}
-
-        //private void ListVehicle(Vehicle vehicle)
-        //{
-        //    int garagePos = GetGaragePosition(vehicle);
-        //    Console.WriteLine($"Parking spot {garagePos} - Registration number: {vehicle.RegistrationNr}");
-        //    Console.WriteLine($"                  Color:               {vehicle.Color}");
-        //    Console.WriteLine($"                  Number of wheels:    {vehicle.NrOfWheels}");
-        //}
-
-        internal List<string> GetPropNames<T>()
+        public List<string> GetPropNames<T>()
         {
             var propNames = new List<string>();
             PropertyInfo[] props = typeof(T).GetProperties();
@@ -235,14 +144,14 @@ namespace exercise_5_garage_1._0
             return propNames;
         }
 
-        internal int GetGaragePosition(Vehicle vehicle)
+        public int GetGaragePosition(Vehicle vehicle)
         {
             if (_garage == null)
                 throw new InvalidOperationException("There is no garage (_garage == null)!");
             return Array.IndexOf(_garage.ToArray(), vehicle);
         }
 
-        internal string CheckOutVehicle(Vehicle vehicle)
+        public string CheckOutVehicle(Vehicle vehicle)
         {
             if (_garage == null)
                 throw new InvalidOperationException("There is no garage (_garage == null)!");
@@ -258,7 +167,7 @@ namespace exercise_5_garage_1._0
             return regNr;
         }
 
-        internal bool GarageIsFull()
+        public bool GarageIsFull()
         {
             if (_garage == null)
                 throw new InvalidOperationException("There is no garage (_garage == null)!");
@@ -270,47 +179,101 @@ namespace exercise_5_garage_1._0
             return true;
         }
 
-        internal void CreateGarage(int vehicleCapacity)
+        public void CreateGarage(int vehicleCapacity)
         {
             _garage = new Garage<Vehicle>(vehicleCapacity);
         }
 
-        internal void AddVehicles(int vehiclesToAdd)
+        public void AddVehicles(int vehiclesToAdd)
         {
             if (_garage == null)
                 throw new InvalidOperationException("There is no garage (_garage == null)!");
 
             Vehicle? vehicle = null;
-            //for (int i = 0; i < addThisManyVehicles; i++)
-            //{
-            //    string regNr = RandomUniqueRegistrationNr();
-            //    ConsoleColor color = (ConsoleColor)random.Next(0,15);
-            //    int nrOfWheels = random.Next(0, 18);
-            //    Console.WriteLine($"   Registration number: {regNr}");
-            //    Console.WriteLine($"   Color:            {color}");
-            //    Console.WriteLine($"   Number of wheels: {nrOfWheels}");
+            for (int i = 0; i < vehiclesToAdd; i++)
+            {
+                do
+                {
+                    vehicle = GetNewRandomVehicle();
+                    if (vehicle == null)
+                        break;
+                } while (_garage.Where(p => p != null)
+                                .Where(p => p.RegistrationNr == vehicle.RegistrationNr)
+                                .Any());
 
-            //    vehicle = new Vehicle(regNr, color, nrOfWheels);
-            //    CheckInVehicle(vehicle);
-            //}
+                if (vehicle == null)
+                    continue;
 
-            vehicle = new Airplane("aaa111", ConsoleColor.Magenta, 4, 5);
-            CheckInVehicle(vehicle);
+                CheckInVehicle(vehicle);
+            }
 
-            vehicle = new Motorcycle("ccc333", ConsoleColor.Red, 4, 750);
-            CheckInVehicle(vehicle);
+            //vehicle = new Airplane("aaa111", ConsoleColor.Magenta, 4, 5);
+            //CheckInVehicle(vehicle);
 
-            vehicle = new Car("ddd444", ConsoleColor.Green, 4, FuelType.Gasoline);
-            CheckInVehicle(vehicle);
+            //vehicle = new Motorcycle("ccc333", ConsoleColor.Red, 4, 750);
+            //CheckInVehicle(vehicle);
 
-            vehicle = new Bus("eee555", ConsoleColor.Green, 6, 83);
-            CheckInVehicle(vehicle);
+            //vehicle = new Car("ddd444", ConsoleColor.Green, 4, FuelType.Gasoline);
+            //CheckInVehicle(vehicle);
 
-            vehicle = new Boat("bbb222", ConsoleColor.Magenta, 4, length: 20);
-            CheckInVehicle(vehicle);
+            //vehicle = new Bus("eee555", ConsoleColor.Green, 6, 83);
+            //CheckInVehicle(vehicle);
+
+            //vehicle = new Boat("bbb222", ConsoleColor.Magenta, 4, length: 20);
+            //CheckInVehicle(vehicle);
 
             //vehicle = new Vehicle("fff666", ConsoleColor.Cyan, 2);
             //CheckInVehicle(vehicle);
+
+        }
+
+        private Vehicle? GetNewRandomVehicle()
+        {
+            VehicleEnumType vehicleType = (VehicleEnumType)random.Next(0, 5);
+
+            Type theVehicleType = Type.GetType("exercise_5_garage_1._0." + vehicleType.ToString())!;
+            if (theVehicleType == null)
+                return null;
+            var vehicleObject = Activator.CreateInstance(theVehicleType);
+            if (vehicleObject == null)
+                return null;
+
+            string regNr = RandomRegistrationNr();
+            ConsoleColor color = (ConsoleColor)random.Next(0, 16);
+            int nrOfWheels = random.Next(0, 19);
+
+            ((Vehicle)vehicleObject).RegistrationNr = regNr;
+            ((Vehicle)vehicleObject).Color = color.ToString();
+            ((Vehicle)vehicleObject).NumberOfWheels = nrOfWheels;
+
+            switch (vehicleType)
+            {
+                case VehicleEnumType.Airplane:
+                    int nrOfEngines = random.Next(1, 13);
+                    ((Airplane)vehicleObject).NrOfEngines = nrOfEngines;
+                    break;
+                case VehicleEnumType.Motorcycle:
+                    int cylinderVolume = random.Next(50, 2001);
+                    ((Motorcycle)vehicleObject).CylinderVolume = cylinderVolume;
+                    break;
+                case VehicleEnumType.Car:
+                    FuelType fuel = (FuelType)random.Next(0, 2);
+                    ((Car)vehicleObject).Fuel = fuel.ToString();
+                    break;
+                case VehicleEnumType.Bus:
+                    int numberOfSeats = random.Next(5, 81);
+                    ((Bus)vehicleObject).NumberOfSeats = numberOfSeats;
+                    break;
+                case VehicleEnumType.Boat:
+                    int length = random.Next(5, 101);
+                    ((Boat)vehicleObject).Length = length;
+                    ((Boat)vehicleObject).NumberOfWheels = 0;
+                    break;
+                default:
+                    break;
+            }
+
+            return (Vehicle)vehicleObject;
         }
     }
 }

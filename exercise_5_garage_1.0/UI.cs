@@ -5,12 +5,8 @@
 
 namespace exercise_5_garage_1._0
 {
-    internal class UI
+    internal class UI : IUI
     {
-        public UI()
-        {
-        }
-
         public ConsoleKey GetKey() => Console.ReadKey(intercept: true).Key;
 
         public bool EscapeOrGetDigitStr(out int digit)
@@ -61,7 +57,7 @@ namespace exercise_5_garage_1._0
             else if ((keyInfo.Key == ConsoleKey.D9)
             || (keyInfo.Key == ConsoleKey.NumPad9))
                 digit = 9;
-            
+
             return false;
         }
 
@@ -72,7 +68,7 @@ namespace exercise_5_garage_1._0
         /// </summary>
         /// <param name="line"></param>
         /// <returns>Returns true if <ESC> was the first character on the line, otherwise false.</returns>
-        internal bool EscapeOrReadLine(out string line)
+        public bool EscapeOrReadLine(out string line)
         {
             // "Peek" on first character to se if its <ESC>.
             var firstKeyInfo = Console.ReadKey();
@@ -91,7 +87,7 @@ namespace exercise_5_garage_1._0
             return false;
         }
 
-        internal void ListConsoleColors(string prompt = "Listing available console colors and their names:")
+        public void ListConsoleColors(string prompt = "Listing available console colors and their names:")
         {
             // To enter the block character '█' in win console:
             //    1. press <alt>
@@ -103,7 +99,7 @@ namespace exercise_5_garage_1._0
 
             foreach (int colorNr in Enum.GetValues(typeof(ConsoleColor)))
             {
-                Console.Write($"   {(colorNr+1),2}: #");
+                Console.Write($"   {(colorNr + 1),2}: #");
                 Console.ForegroundColor = (ConsoleColor)colorNr;
                 Console.Write($"████");
                 Console.ResetColor();
@@ -113,31 +109,26 @@ namespace exercise_5_garage_1._0
             //PressAnyKeyToContinue("\nPress any key to return: ");
         }
 
-        internal void PressAnyKeyToContinue(string message = "\nPress any key to continue: ")
+        public void PressAnyKeyToContinue(string message = "\nPress any key to continue: ")
         {
             Write(message);
             GetKey();
             Write("\n");
         }
 
-        internal void Write(string str)
+        public void Write(string str)
         {
             Console.Write(str);
         }
 
-        internal void WriteHeadLine(string headLine)
+        public void WriteHeadLine(string headLine)
         {
             Console.ResetColor();
             Console.Clear();
             Console.Write(headLine);
         }
 
-        //internal void Clear()
-        //{
-        //    Console.Clear();
-        //}
-
-        internal void WriteMenuOptions(string menuOptions)
+        public void WriteMenuOptions(string menuOptions)
         {
             Console.Write(menuOptions);
         }

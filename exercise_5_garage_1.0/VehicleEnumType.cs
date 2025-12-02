@@ -2,7 +2,6 @@
 {
     internal enum VehicleEnumType
     {
-        Vehicle,
         Airplane,
         Motorcycle,
         Car,
