@@ -46,6 +46,21 @@ namespace exercise_5_garage_1._0.Tests
         }
 
         [Fact]
+        public void Indexer_Get_InvalidUpperIndex_ShouldThrowArgumentOutOfRangeException()
+        {
+            // Arrange
+            const int nrVehicles = 1;
+            var garage = new Garage<Boat>(nrVehicles);
+            Boat vehicle;
+
+            // Act
+            var exception = Assert.Throws<IndexOutOfRangeException>(() => vehicle = garage[1]);
+
+            // Assert
+            Assert.Equal("Index was outside the bounds of the array.", exception.Message);
+        }
+
+        [Fact]
         public void Indexer_Set_InvalidUpperIndex_ShouldThrowArgumentOutOfRangeException()
         {
             // Arrange
@@ -57,6 +72,21 @@ namespace exercise_5_garage_1._0.Tests
 
             // Assert
             Assert.Equal("ix ('1') must be less than '1'. (Parameter 'ix')\r\nActual value was 1.", exception.Message);
+        }
+
+        [Fact]
+        public void Indexer_Get_InvalidLowerIndex_ShouldThrowArgumentOutOfRangeException()
+        {
+            // Arrange
+            const int nrVehicles = 1;
+            var garage = new Garage<Boat>(nrVehicles);
+            Boat vehicle;
+
+            // Act
+            var exception = Assert.Throws<IndexOutOfRangeException>(() => vehicle = garage[-1]);
+
+            // Assert
+            Assert.Equal("Index was outside the bounds of the array.", exception.Message);
         }
 
         [Fact]
