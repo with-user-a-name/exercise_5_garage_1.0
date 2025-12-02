@@ -5,7 +5,7 @@ using System.Drawing;
 namespace exercise_5_garage_1._0
 {
 
-    internal class Car : Vehicle
+    public class Car : Vehicle
     {
         private FuelType _fuel;
 

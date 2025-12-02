@@ -1,7 +1,7 @@
 ﻿
 namespace exercise_5_garage_1._0
 {
-    internal class Bus : Vehicle
+    public class Bus : Vehicle
     {
         public int NumberOfSeats { get; set; }
 

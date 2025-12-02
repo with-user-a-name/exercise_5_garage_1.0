@@ -2,7 +2,7 @@
 
 namespace exercise_5_garage_1._0
 {
-    internal class Garage<T> : IGarage<T> where T : Vehicle
+    public class Garage<T> : IGarage<T> where T : Vehicle
     {
 
         private T[] _vehicles;
@@ -10,7 +10,12 @@ namespace exercise_5_garage_1._0
         public T this[int ix]
         {
             get { return _vehicles[ix]; }
-            set { _vehicles[ix] = value; }
+            set
+            {
+                ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(ix, _vehicles.Length);
+                ArgumentOutOfRangeException.ThrowIfNegative(ix);
+                _vehicles[ix] = value; 
+            }
         }
 
         public Garage(int capacity)

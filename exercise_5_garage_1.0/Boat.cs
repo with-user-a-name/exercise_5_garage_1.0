@@ -1,7 +1,7 @@
 ﻿
 namespace exercise_5_garage_1._0
 {
-    internal class Boat : Vehicle
+    public class Boat : Vehicle
     {
         public int Length { get; set; }
 

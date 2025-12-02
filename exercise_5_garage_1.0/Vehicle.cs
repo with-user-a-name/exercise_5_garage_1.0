@@ -4,7 +4,7 @@ using System.Text.RegularExpressions;
 namespace exercise_5_garage_1._0
 {
 
-    internal abstract class Vehicle
+    public abstract class Vehicle
     {
         private string _regNr = string.Empty;
         private const int _MaxNrOfWheels = 18;

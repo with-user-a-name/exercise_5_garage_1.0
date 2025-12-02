@@ -1,7 +1,7 @@
 ﻿
 namespace exercise_5_garage_1._0
 {
-    internal class Motorcycle : Vehicle
+    public class Motorcycle : Vehicle
     {
         public int CylinderVolume { get; set; }
 
